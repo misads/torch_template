@@ -1,5 +1,5 @@
 # torch_template
-A Python package for commonly used PyTorch models, data loaders and utils. 
+A Python package for commonly used pytorch models, data loaders and utils. 
 
 
 ### Installation
