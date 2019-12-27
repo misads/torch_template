@@ -29,8 +29,8 @@ A configure file `torch_template.egg-info` will be generated in the repo directo
 
 ```python
 import torch_template
-from torch_template.utils import misc_utils as utils
-from torch_template.utils import torch_utils
+from torch_template import misc_utils as utils
+from torch_template import torch_utils
 ```
 
 ### File structure
