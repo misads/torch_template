@@ -9,8 +9,19 @@ Clone the repo, cd into it and run `pip install .` command.
 ``` bash
 git clone https://github.com/misads/torch_template.git
 cd torch_template
+```
+**For pip**  
+```bash
 pip install . 
 ```
+
+**For conda (in env)**
+```bash
+python setup.py install
+```
+A `torch_template.egg-info` directory will be generated.
+Copy `torch_template` and `torch_template.egg-info` to your `site-packages` folder.
+
 
 ### Usage
 
