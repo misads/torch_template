@@ -15,12 +15,14 @@ cd torch_template
 pip install . 
 ```
 
-**For conda (in env)**
+**For conda**
 ```bash
+source ~/anaconda3/bin/activate
+conda activate <env>
 python setup.py install
 ```
-A `torch_template.egg-info` directory will be generated.
-Copy `torch_template` and `torch_template.egg-info` to your `site-packages` folder.
+
+`torch_template.egg-info` will be generated in the repo directory. Copy `torch_template` and `torch_template.egg-info` to your `site-packages` folder.
 
 
 ### Usage
