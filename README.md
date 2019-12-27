@@ -22,7 +22,7 @@ conda activate <env>
 python setup.py install
 ```
 
-`torch_template.egg-info` will be generated in the repo directory. Copy `torch_template` and `torch_template.egg-info` to your `site-packages` folder.
+A configure file `torch_template.egg-info` will be generated in the repo directory. Copy `torch_template` and `torch_template.egg-info` to your `site-packages` folder.
 
 
 ### Usage
