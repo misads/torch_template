@@ -355,6 +355,20 @@ def write_loss(writer: SummaryWriter, prefix, loss_name: str, value: float, iter
         os.path.join(prefix, loss_name), value, iteration)
 
 
+def write_graph(writer: SummaryWriter, model, input_to_model=None):
+    """
+        Example:
+            write_loss(writer, 'train', 'F1', 0.78, iteration)
+        :param writer: writer created by create_summary_writer()
+        :param prefix: e.g. for '/train/loss1' is 'train'
+        :param loss_name:
+        :param value:
+        :param iteration:
+    :return:
+    """
+    writer.add_graph(model, input_to_model)
+
+
 def write_image(writer: SummaryWriter, prefix, image_name: str, img, iteration, dataformats='CHW'):
     """
         Example:
