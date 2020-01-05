@@ -18,10 +18,12 @@
 # -- Project information -----------------------------------------------------
 import os
 import sys
+dirname = os.path.dirname
+rootdir = dirname(dirname(dirname(os.path.abspath(__file__))))
+sys.path.insert(0, rootdir)
 # dirname = os.path.dirname
 # rootdir = dirname(dirname(dirname(os.path.abspath(__file__))))
 # sys.path.insert(0, rootdir)
-# sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'torch_template'
 copyright = '2020, Haoyu Xu'

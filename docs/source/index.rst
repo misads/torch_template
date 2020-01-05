@@ -11,7 +11,7 @@ Welcome to torch_template's documentation!
    :caption: Contents:
 
    utils
-
+   misc_utils
 
 
 
