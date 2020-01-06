@@ -29,10 +29,11 @@ import logging
 
 
 def p(v):
-    """
-        Recursively print list, tuple or dict items
+    """Recursively print list, tuple or dict items
 
-        :param v: a list, tuple or dict.
+    Args:
+        v(list, tuple or dict): a list, tuple or dict to print.
+
     """
     if type(v) == list or type(v) == tuple:
         for i in v:
@@ -50,16 +51,17 @@ def color_print(text='', color=0):
     Example
         >>> color_print('yellow', 3)
 
-    :param text(str): text to print
-    :param color(int):
-        * 0       black
-        * 1       red
-        * 2       green
-        * 3       yellow
-        * 4       blue
-        * 5       cyan (like light red)
-        * 6       magenta (like light blue)
-        * 7       white
+    Args:
+        text(str): text to print.
+        color(int):
+            * 0       black
+            * 1       red
+            * 2       green
+            * 3       yellow
+            * 4       blue
+            * 5       cyan (like light red)
+            * 6       magenta (like light blue)
+            * 7       white
 
     """
     print('\033[1;3%dm' % color, end='')
@@ -68,13 +70,12 @@ def color_print(text='', color=0):
 
 
 def print_args(args):
-    """
-        Print args parsed by argparse.
+    """Print args parsed by argparse.
 
-        Example
-            >>> parser = argparse.ArgumentParser()
-            >>> args = parser.parse_args()
-            >>> print_args(args)
+    Example
+        >>> parser = argparse.ArgumentParser()
+        >>> args = parser.parse_args()
+        >>> print_args(args)
 
     """
     for k, v in args._get_kwargs():
@@ -82,15 +83,21 @@ def print_args(args):
 
 
 def get_logger(f='log.txt', mode='w', level='debug'):
-    """
-        Example:
-            logger = get_logger(level='debug')
-            logger.info("test")
+    """Get a logger.
 
-        :param f: log file
-        :param mode: 'w' or 'a'
-        :param level: 'debug' or 'info'
-        :return:
+    Example
+        >>> logger = get_logger(level='debug')
+        >>> logger.info("test")
+
+    Args:
+
+        f(str): log file path.
+        mode(str): 'w' or 'a'.
+        level(str): 'debug' or 'info'.
+
+    Returns:
+        A logger.
+
     """
     logger = logging.getLogger('bdcn')
     if level.lower() == 'debug':
@@ -117,14 +124,17 @@ def get_logger(f='log.txt', mode='w', level='debug'):
     return logger
 
 
-def safe_key(dic, key, default=None):
-    """
-        return dict[key] only if dict has this key
-        in case of KeyError
-        :param dic:
-        :param key:
-        :param default:
-        :return:
+def safe_key(dic: dict, key, default=None):
+    """Return dict[key] if dict has the key, in case of KeyError.
+
+    Args:
+        dic(dict): a dictionary.
+        key(usually str or int): key.
+        default: default return value.
+
+    Returns:
+        dic[key] if key in dic else default.
+
     """
     if key in dic:
         return dic[key]
@@ -133,49 +143,75 @@ def safe_key(dic, key, default=None):
 
 
 def try_make_dir(folder):
-    """
-        in case of FileExistsError
-        :param folder:
-        :return:
+    """Make a directory when ignoring FileExistsError.
+
+    Args:
+        folder(str): directory path.
+
     """
     os.makedirs(folder, exist_ok=True)
 
 
 def get_file_name(path):
-    """
-        Example:
-            get_file_name('train/0001.jpg')
-            returns 0001
+    """Get filename by path (without extension).
 
-        :param path:
-        :return: filename
+    Example
+        >>> get_file_name('train/0001.jpg')  # 0001
+
+    Args
+        path(str): file's abs path.
+
+    Returns
+        filename (without extension).
+
     """
     name, _ = os.path.splitext(os.path.basename(path))
     return name
 
 
-def get_file_paths_by_pattern(folder, pattern='*'):
-    """
-        Examples: get all *.png files in folder
-            get_file_paths_by_pattern(folder, '*.png')
-        get all files with '_rotate' in name
-            get_file_paths_by_pattern(folder, '*rotate*')
+def get_dir_name(path):
+    """Get parent directory name.
 
-        :param folder:
-        :param pattern:
-        :return: a list of matching paths
+    Example
+        >>> get_dir_name('root/train/0001.jpg')  # mode/train
+        >>> get_dir_name(get_dir_name('root/train/0001.jpg'))  # root
+
+    Args
+        path(str): file's abs path.
+
+    Returns
+        dirname.
+    """
+    return os.path.dirname(path)
+
+
+def get_file_paths_by_pattern(pattern='*', folder='.'):
+    """Get a file path list matched given pattern.
+
+    Examples
+        >>> get_file_paths_by_pattern('*.png')  # get all *.png files in folder
+        >>> get_file_paths_by_pattern('*rotate*')  # get all files with 'rotate' in name
+
+    Args:
+        pattern(str): a pattern to match files.
+        folder(str): searching folder.
+
+    Returns
+        (list of str): a list of matching paths.
     """
     paths = glob.glob(os.path.join(folder, pattern))
     return paths
 
 
 def format_num(num: int) -> str:
-    """
-        Add comma in every three digits (return a string).
+    """Add comma in every three digits (return a string).
 
-        Examples
-            >>> format_num(10000)  # 10,000
-            >>> format_num(123456789)  # 123,456,789
+    Examples
+        >>> format_num(10000)  # 10,000
+        >>> format_num(123456789)  # 123,456,789
+
+    Args:
+        num(int): a number.
 
     """
     num = str(num)
@@ -190,14 +226,16 @@ def format_num(num: int) -> str:
 
 
 def format_time(seconds):
-    """
-        Convert seconds to formatted time string.
+    """Convert seconds to formatted time string.
 
-        Examples
-            >>> format_time(10)  # 10s
-            >>> format_time(100)  # 1m
-            >>> format_time(10000)  # 2h 47m
-            >>> format_time(1000000)  # 11d 13h 47m
+    Examples
+        >>> format_time(10)  # 10s
+        >>> format_time(100)  # 1m
+        >>> format_time(10000)  # 2h 47m
+        >>> format_time(1000000)  # 11d 13h 47m
+
+    Args:
+        seconds(int): second number.
 
     """
     eta_d = seconds // 86400
@@ -228,18 +266,22 @@ begin_time = last_time
 
 
 def progress_bar(current, total, pre_msg=None, msg=None):
-    """
+    """Render a progress_bar in terminal.
+
+    Preview
         Training...  Step: [=======>... 26/100 ...........] ETA: 0s | loss:0.45
 
-        Example:
-            for i in range(100):
-                progress_bar(i, 100, 'Training...', 'loss:0.45')
+    Example
+        >>> for i in range(100):
+        >>>     progress_bar(i, 100, 'Training...', 'loss:0.45')
 
-        :param current: from 0 to total-1
-        :param total:
-        :param pre_msg: msg **before** progress bar
-        :param msg: msg **after** progress bar
-        :return:
+    Args:
+
+        current(int): current counter, range in [0, total-1]
+        total(int): total counts.
+        pre_msg(str): message before the progress bar.
+        msg(str): message after the progress bar.
+
     """
     global last_time, begin_time
     if current == 0:
@@ -320,6 +362,15 @@ def chw_to_hwc(img):
 
 
 def is_file_image(filename):
+    """Return if a file's extension is an image's.
+
+    Args:
+        filename(str): file path.
+
+    Returns:
+        (bool): if the file is image or not.
+
+    """
     img_ex = ['jpg', 'png', 'bmp', 'jpeg', 'tiff']
     if '.' not in filename:
         return False
