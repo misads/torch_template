@@ -1,7 +1,6 @@
 # torch_template
 
-
-<p align="center">
+<p>
     <a href='https://torch-template.readthedocs.io/en/latest/?badge=latest'>
         <img src='https://readthedocs.org/projects/torch-template/badge/?version=latest' alt='Documentation Status' /></a>
     <a href="https://opensource.org/licenses/MIT">
