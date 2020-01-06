@@ -1,5 +1,5 @@
 Misc_Utils
 ======
 
-.. automodule:: misc_utils
+.. automodule:: tt.misc_utils
    :members:
