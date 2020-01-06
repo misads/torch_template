@@ -1,5 +1,5 @@
 Misc_Utils
 ======
 
-.. automodule:: torch_template.misc_utils
+.. automodule:: torch_template.utils.misc_utils
    :members:
