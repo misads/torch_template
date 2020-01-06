@@ -4,7 +4,7 @@ Misc PyTorch utils
 
 Author: xuhaoyu@tju.edu.cn
 
-update 12.7
+Updated: 2020.1.6
 
 Usage:
     `from torch_utils import *`

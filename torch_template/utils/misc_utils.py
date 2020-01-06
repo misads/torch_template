@@ -4,11 +4,11 @@ Misc system & image process utils
 
 Author: xuhaoyu@tju.edu.cn
 
-update 12.7
+Updated: 2020.1.6
 
 Usage:
-    `import misc_utils as utils`
-    `utils.func_name()`  # to call functions in this file
+    >>> from torch_template import misc_utils as utils
+    >>> utils.func_name()  # to call functions in this file
 """
 import glob
 import os
@@ -31,8 +31,8 @@ import logging
 def p(v):
     """
         Recursively print list, tuple or dict items
-        :param v:
-        :return:
+
+        :param v: a list, tuple or dict.
     """
     if type(v) == list or type(v) == tuple:
         for i in v:
@@ -45,22 +45,22 @@ def p(v):
 
 
 def color_print(text='', color=0):
-    """
-        Example:
-            color_print('yellow', 3)
+    """Print colored text.
 
-        :param text:
-        :param color:
-            0       black
-            1       red
-            2       green
-            3       yellow
-            4       blue
-            5       cyan (like light red)
-            6       magenta (like light blue)
-            7       white
+    Example
+        >>> color_print('yellow', 3)
 
-        :return:
+    :param text(str): text to print
+    :param color(int):
+        * 0       black
+        * 1       red
+        * 2       green
+        * 3       yellow
+        * 4       blue
+        * 5       cyan (like light red)
+        * 6       magenta (like light blue)
+        * 7       white
+
     """
     print('\033[1;3%dm' % color, end='')
     print(text, end='')
@@ -69,13 +69,13 @@ def color_print(text='', color=0):
 
 def print_args(args):
     """
-        Example
-            parser = argparse.ArgumentParser()
-            args = parser.parse_args()
-            print_args(args)
+        Print args parsed by argparse.
 
-        :param args: args parsed by argparse
-        :return:
+        Example
+            >>> parser = argparse.ArgumentParser()
+            >>> args = parser.parse_args()
+            >>> print_args(args)
+
     """
     for k, v in args._get_kwargs():
         print('\033[1;32m', k, "\033[0m=\033[1;33m", v, '\033[0m')
@@ -169,14 +169,14 @@ def get_file_paths_by_pattern(folder, pattern='*'):
     return paths
 
 
-def format_num(num) -> str:
+def format_num(num: int) -> str:
     """
-        Examples:
-            format_num(10000) -> 10,000
-            format_num(123456789) -> 123,456,789
+        Add comma in every three digits (return a string).
 
-        :param num:
-        :return:
+        Examples
+            >>> format_num(10000)  # 10,000
+            >>> format_num(123456789)  # 123,456,789
+
     """
     num = str(num)
     ans = ''
@@ -191,13 +191,14 @@ def format_num(num) -> str:
 
 def format_time(seconds):
     """
-        Examples:
-            format_time(10) -> 10s
-            format_time(100) -> 1m
-            format_time(10000) -> 2h 47m
-            format_time(1000000) -> 11d 13h 47m
-        :param seconds:
-        :return:
+        Convert seconds to formatted time string.
+
+        Examples
+            >>> format_time(10)  # 10s
+            >>> format_time(100)  # 1m
+            >>> format_time(10000)  # 2h 47m
+            >>> format_time(1000000)  # 11d 13h 47m
+
     """
     eta_d = seconds // 86400
     eta_h = (seconds % 86400) // 3600
@@ -308,9 +309,10 @@ def progress_bar(current, total, pre_msg=None, msg=None):
 
 def chw_to_hwc(img):
     """
-        change [channel][height][width] to [height][width][channel]
-        :param img:
-        :return:
+        Convert image from [channel, height, width] to [height, width, channel].
+
+        :param img: image of chw format
+        :return: changed image of hwc format
     """
 
     img = np.transpose(img, [1, 2, 0])
