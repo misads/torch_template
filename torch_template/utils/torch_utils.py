@@ -1,14 +1,10 @@
 # encoding=utf-8
-"""
-Misc PyTorch utils
-
-Author: xuhaoyu@tju.edu.cn
-
-Updated: 2020.1.6
+"""Misc PyTorch utils
 
 Usage:
-    `from torch_utils import *`
-    `func_name()`  # to call functions in this file
+    >>> from torch_template import torch_utils
+    >>> torch_utils.func_name()  # to call functions in this file
+
 """
 from datetime import datetime
 import math
@@ -26,38 +22,47 @@ from ..utils.misc_utils import format_num
 
 
 def clamp(x, min=0.01, max=0.99):
-    """
-        value > max will be set to max
-        value < min will be set to min
-        :param x: input tensor
-        :param min:
-        :param max:
-        :return:
+    """clamp a tensor.
+
+    Args:
+        x(torch.Tensor): input tensor
+        min(float): value < min will be set to min.
+        max(float): value > max will be set to max.
+
+    Returns:
+        (torch.Tensor): a clamped tensor.
     """
     return torch.clamp(x, min, max)
 
 
 def repeat(x: torch.Tensor, *sizes):
-    """
-        Example:
-            >>> t = repeat(t, 1, 3, 1, 1)
-            # t = t.repeat(1, 3, 1, 1) or t = torch.cat([t, t, t], dim=1)
+    """Repeat a dimension of a tensor.
 
-        :param x:
-        :param sizes:
-        :return:
+    Args:
+        x(torch.Tensor): input tensor.
+        sizes: repeat times for each dimension.
+
+    Returns:
+        (torch.Tensor): a repeated tensor.
+
+    Example
+        >>> t = repeat(t, 1, 3, 1, 1)  # same as t = t.repeat(1, 3, 1, 1) or t = torch.cat([t, t, t], dim=1)
     """
 
     return x.repeat(*sizes)
 
 
 def tensor2im(x: torch.Tensor, norm=False, dtype='float32'):
-    """
+    """Convert tensor to image.
 
+    Args:
+        x(torch.Tensor): input tensor, [n, c, h, w] float32 type.
+        norm(bool): if the tensor should be denormed first
+        dtype(str): not used yet.
 
-        :param x: [n, c, h, w] float32 type
-        :param dtype:
-        :return:
+    Returns:
+        an image in shape of [h, w, c].
+
     """
     if norm:
         x = (x + 1) / 2
@@ -70,6 +75,38 @@ def tensor2im(x: torch.Tensor, norm=False, dtype='float32'):
 #    Network utils
 ##############################
 def print_network(net: nn.Module, print_size=False):
+    """Print network structure and number of parameters.
+
+    Args:
+        net(nn.Module): network model.
+        print_size(bool): print parameter num of each layer.
+
+    Example
+        >>> import torchvision as tv
+        >>> from torch_template import torch_utils
+        >>>
+        >>> vgg16 = tv.models.vgg16()
+        >>> torch_utils.print_network(vgg16)
+        >>> '''
+        >>> features.0.weight [3, 64, 3, 3]
+        >>> features.2.weight [64, 64, 3, 3]
+        >>> features.5.weight [64, 128, 3, 3]
+        >>> features.7.weight [128, 128, 3, 3]
+        >>> features.10.weight [128, 256, 3, 3]
+        >>> features.12.weight [256, 256, 3, 3]
+        >>> features.14.weight [256, 256, 3, 3]
+        >>> features.17.weight [256, 512, 3, 3]
+        >>> features.19.weight [512, 512, 3, 3]
+        >>> features.21.weight [512, 512, 3, 3]
+        >>> features.24.weight [512, 512, 3, 3]
+        >>> features.26.weight [512, 512, 3, 3]
+        >>> features.28.weight [512, 512, 3, 3]
+        >>> classifier.0.weight [25088, 4096]
+        >>> classifier.3.weight [4096, 4096]
+        >>> classifier.6.weight [4096, 1000]
+        >>> Total number of parameters: 138,357,544
+        >>> '''
+    """
     num_params = 0
     print(net)
     for name, param in net.named_parameters():
@@ -81,25 +118,25 @@ def print_network(net: nn.Module, print_size=False):
             else:
                 print(name, size[1:2] + size[:1] + size[2:])
     print('Total number of parameters: %s' % format_num(num_params))
-    print('The size of receptive field: %s' % format_num(receptive_field(net)))
+    # print('The size of receptive field: %s' % format_num(receptive_field(net)))
 
 
-def receptive_field(net):
-    def _f(output_size, ksize, stride, dilation):
-        return (output_size - 1) * stride + ksize * dilation - dilation + 1
-
-    stats = []
-    for m in net.modules():
-        if isinstance(m, torch.nn.Conv2d):
-            stats.append((m.kernel_size, m.stride, m.dilation))
-
-    rsize = 1
-    for (ksize, stride, dilation) in reversed(stats):
-        if type(ksize) == tuple: ksize = ksize[0]
-        if type(stride) == tuple: stride = stride[0]
-        if type(dilation) == tuple: dilation = dilation[0]
-        rsize = _f(rsize, ksize, stride, dilation)
-    return rsize
+# def receptive_field(net):
+#     def _f(output_size, ksize, stride, dilation):
+#         return (output_size - 1) * stride + ksize * dilation - dilation + 1
+#
+#     stats = []
+#     for m in net.modules():
+#         if isinstance(m, torch.nn.Conv2d):
+#             stats.append((m.kernel_size, m.stride, m.dilation))
+#
+#     rsize = 1
+#     for (ksize, stride, dilation) in reversed(stats):
+#         if type(ksize) == tuple: ksize = ksize[0]
+#         if type(stride) == tuple: stride = stride[0]
+#         if type(dilation) == tuple: dilation = dilation[0]
+#         rsize = _f(rsize, ksize, stride, dilation)
+#     return rsize
 
 
 ##############################
@@ -125,12 +162,14 @@ class Meters(object):
 
 
 class AverageMeters(Meters):
-    """
-        Example:
-        avg_meters = AverageMeters()
-        for i in range(100):
-            avg_meters.update({'f': i})
-            print(str(avg_meters))
+    """AverageMeter class
+
+    Example
+        >>> avg_meters = AverageMeters()
+        >>> for i in range(100):
+        >>>     avg_meters.update({'f': i})
+        >>>     print(str(avg_meters))
+
     """
 
     def __init__(self, dic=None, total_num=None):
@@ -163,12 +202,14 @@ class AverageMeters(Meters):
 
 
 class ExponentialMovingAverage(Meters):
-    """
-        Example:
-        ema_meters = ExponentialMovingAverage(0.98)
-        for i in range(100):
-            ema_meters.update({'f': i})
-            print(str(ema_meters))
+    """EMA class
+
+    Example
+        >>> ema_meters = ExponentialMovingAverage(0.98)
+        >>> for i in range(100):
+        >>>     ema_meters.update({'f': i})
+        >>>     print(str(ema_meters))
+
     """
 
     def __init__(self, decay=0.9, dic=None, total_num=None):
@@ -207,35 +248,38 @@ class ExponentialMovingAverage(Meters):
 
 
 def load_ckpt(model, ckpt_path):
-    """
-        Example:
-            class Model(nn.Module):
-                ....
+    """Load checkpoint.
 
-            model = Model().cuda()
-            load_ckpt(model, 'model.pt')
+    Args:
+        model(nn.Module): object of a subclass of nn.Module.
+        ckpt_path(str): *.pt file to load.
 
-        :param model: object of a subclass of nn.Module
-        :param ckpt_path: *.pt file to load
-        :return:
+    Example
+        >>> class Model(nn.Module):
+        >>>     pass
+        >>>
+        >>> model = Model().cuda()
+        >>> load_ckpt(model, 'model.pt')
+
     """
     model.load_state_dict(torch.load(ckpt_path))
 
 
 def save_ckpt(model, ckpt_path):
+    """Save checkpoint.
+
+    Args:
+        model(nn.Module): object of a subclass of nn.Module.
+        ckpt_path(str): *.pt file to save.
+
+    Example
+        >>> class Model(nn.Module):
+        >>>     pass
+        >>>
+        >>> model = Model().cuda()
+        >>> save_ckpt(model, 'model.pt')
+
     """
-        Example:
-            class Model(nn.Module):
-                ....
-
-            model = Model().cuda()
-            save_ckpt(model, 'model.pt')
-
-        :param model: object of a subclass of nn.Module
-        :param ckpt_path: *.pt file to save
-        :return:
-    """
-
     torch.save(model.state_dict(), ckpt_path)
 
 
@@ -248,7 +292,7 @@ class LR_Scheduler(object):
     """Learning Rate Scheduler
 
     Example:
-        >>> scheduler = LR_Scheduler('cosine', opt.lr, opt.epochs, len(dataloader), warmup_epochs=20)
+        >>> scheduler = LR_Scheduler('cos', opt.lr, opt.epochs, len(dataloader), warmup_epochs=20)
         >>> for i, data in enumerate(dataloader)
         >>>     scheduler(self.g_optimizer, i, epoch)
 
@@ -330,6 +374,23 @@ class LR_Scheduler(object):
 
 
 def create_summary_writer(log_dir):
+    """Create a tensorboard summary writer.
+
+    Args:
+        log_dir: log directory.
+
+    Returns:
+        (SummaryWriter): a summary writer.
+
+    Example
+        >>> writer = create_summary_writer(os.path.join(self.basedir, 'logs'))
+        >>> write_meters_loss(writer, 'train', avg_meters, iteration)
+        >>> write_loss(writer, 'train', 'F1', 0.78, iteration)
+        >>> write_image(writer, 'train', 'input', img, iteration)
+        >>> # shell
+        >>> tensorboard --logdir {base_path}/logs
+
+    """
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     log_dir = os.path.join(log_dir, datetime.now().strftime('%m-%d_%H-%M-%S'))
@@ -341,63 +402,79 @@ def create_summary_writer(log_dir):
 
 
 def write_loss(writer: SummaryWriter, prefix, loss_name: str, value: float, iteration):
-    """
-        Example:
-            write_loss(writer, 'train', 'F1', 0.78, iteration)
-        :param writer: writer created by create_summary_writer()
-        :param prefix: e.g. for '/train/loss1' is 'train'
-        :param loss_name:
-        :param value:
-        :param iteration:
-    :return:
+    """Write loss into writer.
+
+    Args:
+        writer(SummaryWriter): writer created by create_summary_writer()
+        prefix(str): any string, e.g. 'train'.
+        loss_name(str): loss name.
+        value(float): loss value.
+        iteration(int): epochs or iterations.
+
+    Example
+        >>> write_loss(writer, 'train', 'F1', 0.78, iteration)
+
     """
     writer.add_scalar(
         os.path.join(prefix, loss_name), value, iteration)
 
 
-def write_graph(writer: SummaryWriter, model, input_to_model=None):
+def write_graph(writer: SummaryWriter, model, inputs_to_model=None):
+    """Write net graph into writer.
+
+    Args:
+        writer(SummaryWriter): writer created by create_summary_writer()
+        model(nn.Module): model.
+        inputs_to_model(tuple or list): forward inputs.
+
+    Example
+        >>> from tensorboardX import SummaryWriter
+        >>> input_data = Variable(torch.rand(16, 3, 224, 224))
+        >>> vgg16 = torchvision.models.vgg16()
+        >>>
+        >>> writer = SummaryWriter(log_dir='logs')
+        >>> write_graph(vgg16, (input_data,))
+
     """
-        Example:
-            write_loss(writer, 'train', 'F1', 0.78, iteration)
-        :param writer: writer created by create_summary_writer()
-        :param prefix: e.g. for '/train/loss1' is 'train'
-        :param loss_name:
-        :param value:
-        :param iteration:
-    :return:
-    """
-    writer.add_graph(model, input_to_model)
+    with writer:
+        writer.add_graph(model, inputs_to_model)
 
 
 def write_image(writer: SummaryWriter, prefix, image_name: str, img, iteration, dataformats='CHW'):
-    """
-        Example:
-            write_image(writer, 'train', 'input', img, iteration)
-        :param writer: writer created by create_summary_writer()
-        :param prefix:
-        :param image_name:
-        :param img: image Tensor, should be channel first. Specific size of [C, H, W].
-        :param iteration:
-        :param dataformats: 'CHW' or 'HWC' or 'NCHW'''
-    :return:
+    """Write images into writer.
+
+    Args:
+        writer(SummaryWriter): writer created by create_summary_writer()
+        prefix(str): any string, e.g. 'train'.
+        image_name(str): image name.
+        img: image tensor in [C, H, W] shape.
+        iteration(int): epochs or iterations.
+        dataformats(str): 'CHW' or 'HWC' or 'NCHW'.
+
+    Example
+        >>> write_image(writer, 'train', 'input', img, iteration)
+
     """
     writer.add_image(
         os.path.join(prefix, image_name), img, iteration, dataformats=dataformats)
 
 
 def write_meters_loss(writer: SummaryWriter, prefix, avg_meters: Meters, iteration):
-    """
-        Example:
-            writer = create_summary_writer(os.path.join(self.basedir, 'logs'))
-            ema_meters = ExponentialMovingAverage(0.98)
-            for i in range(100):
-                ema_meters.update({'f1': i, 'f2': i*0.5})
-                write_meters_loss(writer, 'train', ema_meters, i)
-        :param writer:
-        :param prefix:
-        :param avg_meters: avg_meters param should be a Meters subclass
-        :param iteration:
-        :return:
+    """Write all losses in a meter class into writer.
+
+    Args:
+        writer(SummaryWriter): writer created by create_summary_writer()
+        prefix(str): any string, e.g. 'train'.
+        avg_meters(AverageMeters or ExponentialMovingAverage): meters.
+        iteration(int): epochs or iterations.
+
+    Example
+        >>> writer = create_summary_writer(os.path.join(self.basedir, 'logs'))
+        >>> ema_meters = ExponentialMovingAverage(0.98)
+        >>> for i in range(100):
+        >>>     ema_meters.update({'f1': i, 'f2': i*0.5})
+        >>>     write_meters_loss(writer, 'train', ema_meters, i)
+
     """
     for key in avg_meters.keys():
         meter = avg_meters[key]

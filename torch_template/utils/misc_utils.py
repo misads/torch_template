@@ -1,10 +1,5 @@
 # encoding=utf-8
-"""
-Misc system & image process utils
-
-Author: xuhaoyu@tju.edu.cn
-
-Updated: 2020.1.6
+"""Misc system & image process utils
 
 Usage:
     >>> from torch_template import misc_utils as utils
@@ -48,9 +43,6 @@ def p(v):
 def color_print(text='', color=0):
     """Print colored text.
 
-    Example
-        >>> color_print('yellow', 3)
-
     Args:
         text(str): text to print.
         color(int):
@@ -63,6 +55,9 @@ def color_print(text='', color=0):
             * 6       magenta (like light blue)
             * 7       white
 
+    Example
+        >>> color_print('yellow', 3)
+
     """
     print('\033[1;3%dm' % color, end='')
     print(text, end='')
@@ -71,6 +66,9 @@ def color_print(text='', color=0):
 
 def print_args(args):
     """Print args parsed by argparse.
+
+    Args:
+        args: args parsed by argparse.
 
     Example
         >>> parser = argparse.ArgumentParser()
@@ -85,10 +83,6 @@ def print_args(args):
 def get_logger(f='log.txt', mode='w', level='debug'):
     """Get a logger.
 
-    Example
-        >>> logger = get_logger(level='debug')
-        >>> logger.info("test")
-
     Args:
 
         f(str): log file path.
@@ -97,6 +91,10 @@ def get_logger(f='log.txt', mode='w', level='debug'):
 
     Returns:
         A logger.
+
+    Example
+        >>> logger = get_logger(level='debug')
+        >>> logger.info("test")
 
     """
     logger = logging.getLogger('bdcn')
@@ -155,14 +153,14 @@ def try_make_dir(folder):
 def get_file_name(path):
     """Get filename by path (without extension).
 
-    Example
-        >>> get_file_name('train/0001.jpg')  # 0001
-
     Args
         path(str): file's abs path.
 
     Returns
         filename (without extension).
+
+    Example
+        >>> get_file_name('train/0001.jpg')  # 0001
 
     """
     name, _ = os.path.splitext(os.path.basename(path))
@@ -172,15 +170,16 @@ def get_file_name(path):
 def get_dir_name(path):
     """Get parent directory name.
 
-    Example
-        >>> get_dir_name('root/train/0001.jpg')  # mode/train
-        >>> get_dir_name(get_dir_name('root/train/0001.jpg'))  # root
-
     Args
         path(str): file's abs path.
 
     Returns
         dirname.
+
+    Example
+        >>> get_dir_name('root/train/0001.jpg')  # mode/train
+        >>> get_dir_name(get_dir_name('root/train/0001.jpg'))  # root
+
     """
     return os.path.dirname(path)
 
@@ -188,16 +187,17 @@ def get_dir_name(path):
 def get_file_paths_by_pattern(pattern='*', folder='.'):
     """Get a file path list matched given pattern.
 
-    Examples
-        >>> get_file_paths_by_pattern('*.png')  # get all *.png files in folder
-        >>> get_file_paths_by_pattern('*rotate*')  # get all files with 'rotate' in name
-
     Args:
         pattern(str): a pattern to match files.
         folder(str): searching folder.
 
     Returns
         (list of str): a list of matching paths.
+
+    Examples
+        >>> get_file_paths_by_pattern('*.png')  # get all *.png files in folder
+        >>> get_file_paths_by_pattern('*rotate*')  # get all files with 'rotate' in name
+
     """
     paths = glob.glob(os.path.join(folder, pattern))
     return paths
@@ -206,12 +206,12 @@ def get_file_paths_by_pattern(pattern='*', folder='.'):
 def format_num(num: int) -> str:
     """Add comma in every three digits (return a string).
 
+    Args:
+        num(int): a number.
+
     Examples
         >>> format_num(10000)  # 10,000
         >>> format_num(123456789)  # 123,456,789
-
-    Args:
-        num(int): a number.
 
     """
     num = str(num)
@@ -228,14 +228,14 @@ def format_num(num: int) -> str:
 def format_time(seconds):
     """Convert seconds to formatted time string.
 
+    Args:
+        seconds(int): second number.
+
     Examples
         >>> format_time(10)  # 10s
         >>> format_time(100)  # 1m
         >>> format_time(10000)  # 2h 47m
         >>> format_time(1000000)  # 11d 13h 47m
-
-    Args:
-        seconds(int): second number.
 
     """
     eta_d = seconds // 86400
@@ -271,16 +271,16 @@ def progress_bar(current, total, pre_msg=None, msg=None):
     Preview
         Training...  Step: [=======>... 26/100 ...........] ETA: 0s | loss:0.45
 
-    Example
-        >>> for i in range(100):
-        >>>     progress_bar(i, 100, 'Training...', 'loss:0.45')
-
     Args:
 
-        current(int): current counter, range in [0, total-1]
+        current(int): current counter, range in [0, total-1].
         total(int): total counts.
         pre_msg(str): message before the progress bar.
         msg(str): message after the progress bar.
+
+    Example
+        >>> for i in range(100):
+        >>>     progress_bar(i, 100, 'Training...', 'loss:0.45')
 
     """
     global last_time, begin_time
