@@ -5,46 +5,45 @@ import torch
 import os
 
 from torch import optim
+import torch.nn.functional as F
 
-import network.DuRN_Pure_Conv_3_Refactor as pure
-import model_zoo
 # from network.pyramid_ppp import Pyramid_Net
+from backbone.unet import NestedUNet
+from loss.cls_loss import f1_loss
+from loss.seg_loss import bce_loss, dice_loss, BCEFocalLoss, FocalLoss
 from network.Ms_Discriminator import MsImageDis
 from network.base_model import BaseModel
-import network.DuRN_Pure_Conv_3_coarse_3 as coarse_3
 from network.metrics import ssim, L1_loss
-from network.weights_init import init_weights
 from utils.torch_utils import ExponentialMovingAverage, print_network
 
+
 models = {
-    'default': pure.cleaner(),
-    'pure': pure.cleaner(),
-    'coarse': coarse_3.cleaner(),
-    'FFA': model_zoo.FFA(),
-    'Nested': model_zoo.NestedUNet(),
+    'Nested': NestedUNet()
+
 }
+
+
+def weights_init(m):
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        m.weight.data.normal_(0.0, 0.02)
+    elif classname.find('BatchNorm2d') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)
 
 
 class Model(BaseModel):
     def __init__(self, opt):
         super(Model, self).__init__()
-
+        self.opt = opt
         # self.cleaner = Pyramid_Net(3, 256).cuda(device=opt.device)
         self.cleaner = models[opt.model].cuda(device=opt.device)
-        if opt.init:
-            init_weights(self.cleaner, opt.init)
+        #####################
+        #    Init weights
+        #####################
+        self.cleaner.apply(weights_init)
 
         print_network(self.cleaner)
-
-        params = {
-            'dim': 64,
-            'norm': 'none',
-            'activ': 'lrelu',  # activation function [relu/lrelu/prelu/selu/tanh]
-            'n_layer': 4,  # number of layers in D
-            'gan_type': 'lsgan',  # GAN loss [lsgan/nsgan]
-            'num_scales': 3,  # number of scales
-            'pad_type': 'reflect'
-        }
 
         # self.discriminitor = MsImageDis(input_dim=3, params=params).cuda(device=opt.device)
         #
@@ -63,35 +62,52 @@ class Model(BaseModel):
         self.avg_meters = ExponentialMovingAverage(0.95)
         self.save_dir = os.path.join(opt.checkpoint_dir, opt.tag)
 
-    def update_G(self, x, y):
+    def update_G(self, cleaned, y):
+        opt = self.opt
 
-        # L1 & SSIM loss
-        some_loss = 0
-        cleaned = self.cleaner(x)
-        ssim_loss_r = -ssim(cleaned, y)
-        ssim_loss = ssim_loss_r * 1.1
+        # cleaned = x
+        #cleaned = self.cleaner(x)
 
-        # Compute L1 loss (not used)
-        l1_loss = L1_loss(cleaned, y)
-        l1_loss = l1_loss * 0.75
+        #########################
+        #       sigmoid
+        #########################
 
-        loss = ssim_loss + l1_loss
+        # cleaned = cleaned.mean(dim=1, keepdim=True)
+        # y = y.mean(dim=1, keepdim=True)
+        # f1 = f1_loss(cleaned, y, thresh=160/255)
+
+        prediction = F.sigmoid(cleaned)
+        target = F.sigmoid(y)
+
+        #########################
+        #       losses
+        #########################
+        bce = bce_loss(prediction, target) * opt.weight_bce
+
+        dice = dice_loss(prediction, target) * opt.weight_dice
+        focal = FocalLoss(prediction, target)
+        l1 = L1_loss(prediction, target)
+
+        # pdb.set_trace()
+
+
+
+        loss = bce + dice + focal * opt.weight_focal
 
         # GAN loss
         # loss_gen_adv = self.discriminitor.calc_gen_loss(input_fake=cleaned)
-        self.avg_meters.update({'ssim': -ssim_loss_r.item(), 'L1': l1_loss.item()})
+        self.avg_meters.update({'bce': bce.item(), 'dice': dice.item(), 'l1': l1.item()})
+
 
         #loss_gen = loss + loss_gen_adv * 1.
         self.g_optimizer.zero_grad()
         loss.backward()
         self.g_optimizer.step()
 
-        return cleaned
-
     def update_D(self, x, y):
         self.d_optimizer.zero_grad()
         # encode
-        cleaned = cleaner(x)
+        cleaned = self.cleaner(x)
         # h_b, n_b = self.gen_b.encode(x_b)
         # decode (cross domain)
 
