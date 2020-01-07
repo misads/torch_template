@@ -22,7 +22,7 @@ def parse_args():
     parser.add_argument('--log_dir', type=str, default='./logs', help='logs are saved here')
     parser.add_argument('--result_dir', type=str, default='./results', help='results are saved here')
 
-    parser.add_argument('--model', type=str, default='DuRN_US', help='which model to use')
+    parser.add_argument('--model', type=str, default='Nested', help='which model to use')
     parser.add_argument('--norm', type=str, default='instance',
                         help='[instance] normalization or [batch] normalization')
 
@@ -33,7 +33,15 @@ def parse_args():
 
     # for datasets
     parser.add_argument('--data_root', type=str, default='./datasets/')
-    parser.add_argument('--dataset', type=str, default='neural')
+    parser.add_argument('--dataset', type=str, default='')
+    parser.add_argument('--valset', type=str, default=None)
+
+
+    # loss weight
+    parser.add_argument('--weight_bce', type=float, default=20)
+    parser.add_argument('--weight_dice', type=float, default=0.5)
+    parser.add_argument('--weight_focal', type=float, default=0.)
+
 
     # training options
     parser.add_argument('--debug', action='store_true', help='debug mode')
@@ -42,8 +50,8 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=500, help='epochs to train')
     parser.add_argument('--lr', type=float, default=0.0001, help='initial learning rate for adam')
 
-    parser.add_argument('--save_freq', type=int, default=10, help='freq to save models')
-    parser.add_argument('--eval_freq', type=int, default=25, help='freq to eval models')
+    parser.add_argument('--save_freq', type=int, default=50, help='freq to save models')
+    parser.add_argument('--eval_freq', '--val_freq', type=int, default=50, help='freq to eval models')
     parser.add_argument('--log_freq', type=int, default=1, help='freq to vis in tensorboard')
 
     return parser.parse_args()
@@ -51,7 +59,7 @@ def parse_args():
 
 opt = parse_args()
 
-opt.device = 'cuda:' + opt.gpu_ids if torch.cuda.is_available() else 'cpu'
+opt.device = 'cuda:' + opt.gpu_ids if torch.cuda.is_available() and opt.gpu_ids != '-1' else 'cpu'
 
 log_dir = os.path.join(opt.log_dir, opt.tag)
 utils.try_make_dir(log_dir)
@@ -61,5 +69,4 @@ logger.info('==================Options==================')
 for k, v in opt._get_kwargs():
     logger.info(str(k) + '=' + str(v))
 logger.info('===========================================')
-
 # utils.print_args(opt)

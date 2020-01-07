@@ -1,141 +1,227 @@
+# encoding = utf-8
+"""
+    U-RISC Challenge
+
+    Team: Microscope
+    
+    Url:
+        https://www.biendata.com/competition/urisc/
+
+    File Structure:
+        .
+        ├── train.py                :Train and evaluation loop, errors and outputs visualization (Powered by TensorBoard)
+        ├── test.py                 :Test
+        │
+        ├── network
+        │     ├── Model.py          :Define models, losses and parameter updating
+        │     └── *.py              :Define networks
+        ├── options
+        │     └── options.py        :Define options
+        │
+        ├── datasets
+        │     ├── simple            :Downloaded datasets
+        │     └── complex
+        │
+        ├── dataloader/             :Define Dataloaders
+        ├── backbone                :Commonly used models
+        ├── utils
+        │     ├── misc_utils.py     :System utils
+        │     └── torch_utils.py    :PyTorch utils
+        │
+        ├── checkpoints/<tag>       :Trained checkpoints
+        ├── logs/<tag>              :Logs and TensorBoard event files
+        └── results/<tag>           :Test results
+
+    Usage:
+
+    #### Train
+
+        python train.py --tag together_1 --epochs 4000 --weight_bce 20. --weight_dice .5 --weight_focal 0.
+            --dataset simple/cleaned --valset simple/big_cheat --gpu_ids 1
+
+    #### Resume or Fine Tune
+
+        python train.py --load checkpoints/network_1 --which-epoch 500  # other args same as ↑
+
+    #### test
+
+        python test.py --tag together_1 --dataset simple/val
+
+    License: MIT
+
+    Last modified 12.28
+"""
+
 import os
+import pdb
 import time
 
 import torch
 from torch.autograd import Variable
-from torch.utils.data import DataLoader
-from torchvision.transforms import transforms
 
-from dataloader import dual_residual_dataset
-from dataloader.image_folder import get_data_loader_folder
+from data.data_loader import CreateDataLoader
+from dataloader import get_paired_data_loader_folder, get_data_loader_folder
 from eval import evaluate
-from network.Model_Dual import Model
+from network.Model import Model
 from options import opt, logger
 from utils.torch_utils import create_summary_writer, write_image, write_meters_loss, LR_Scheduler
 import utils.misc_utils as utils
-import torch
+import numpy as np
+dataset = os.path.join(opt.data_root, opt.dataset)
+if not os.path.isdir(dataset):
+    raise FileNotFoundError("Dataset '%s' not found" % dataset)
 
-data_name = 'RESIDE'
-data_root = './datasets/' + data_name + '/ITS/'
-imlist_pth = './datasets/' + data_name + '/indoor_train_list.txt'
-valroot = "./datasets/" + data_name + "/SOTS/nyuhaze500/"
-val_list_pth = './datasets/' + data_name + '/sots_test_list.txt'
-realroot = "./datasets/" + data_name + "/REAL/"
-real_list_pth = './datasets/' + data_name + '/real.txt'
+######################
+#  Training dataset
+######################
+utils.color_print("Training dataset is set to '%s'" % dataset, 3)
 
-# dstroot for saving models.
-# logroot for writting some log(s), if is needed.
-save_root = os.path.join(opt.checkpoint_dir, opt.tag)
-log_root = os.path.join(opt.log_dir, opt.tag)
+train_A_path = os.path.join(dataset, 'train_A')
+train_B_path = os.path.join(dataset, 'train_B')
 
-utils.try_make_dir(save_root)
-utils.try_make_dir(log_root)
+train_dataloader = get_paired_data_loader_folder(train_A_path, train_B_path, batch_size=opt.batch_size,
+                                                 train=True, height=opt.crop, width=opt.crop, num_workers=1,
+                                                 crop=True, flip=True, normalization=True)
+
+test_path = os.path.join(dataset, 'test_A')
+has_test = False
+if os.path.isdir(test_path):
+    has_test = True
+    utils.color_print("Test dataset is set to '%s'" % test_path, 3)
+    test_dataloader = get_data_loader_folder(test_path, batch_size=1, train=False, num_workers=1,
+                                             crop=False, normalization=True, return_paths=True)
+
+######################
+#  Validation dataset
+######################
+has_val = opt.valset is not None
+
+if has_val:
+    val_set = os.path.join(opt.data_root, opt.valset)
+    if not os.path.isdir(val_set):
+        raise FileNotFoundError("Validation dataset '%s' not found" % val_set)
+
+    val_A_path = os.path.join(val_set, 'train_A')
+    val_B_path = os.path.join(val_set, 'train_B')
+
+    utils.color_print("Validation dataset is set to '%s'" % val_set, 2)
+
+    val_dataloader = get_paired_data_loader_folder(val_A_path, val_B_path, batch_size=1,
+                                                   train=False, height=opt.crop, width=opt.crop, num_workers=1,
+                                                   crop=False, flip=False, normalization=True)
+
+    # val_dataloader = get_data_loader_folder(test_path, batch_size=1, train=False, num_workers=1,
+    #                                          crop=False, normalization=True, return_paths=True)
+
 
 if opt.debug:
     opt.save_freq = 1
     opt.eval_freq = 1
     opt.log_freq = 1
 
-# Transform
-transform = transforms.ToTensor()
-# Dataloader
-max_size = 9999999
-if opt.debug:
-    max_size = opt.batch_size * 10
+######################
+#       Paths
+######################
+save_root = os.path.join(opt.checkpoint_dir, opt.tag)
+log_root = os.path.join(opt.log_dir, opt.tag)
 
-train_dataset = dual_residual_dataset.ImageSet(data_root, imlist_pth,
-                                               transform=transform, is_train=True,
-                                               with_aug=False, crop_size=opt.crop, max_size=max_size)
-dataloader = DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=5)
-"""
-    Val dataset
-"""
-val_dataset = dual_residual_dataset.ImageSet(valroot, val_list_pth,
-                                             transform=transform)
-val_dataloader = DataLoader(val_dataset, batch_size=1, shuffle=False, num_workers=1)
-"""
-    Real val dataset
-"""
-real_dataloader = get_data_loader_folder(realroot, 1, train=False, num_workers=1, crop=False)
+utils.try_make_dir(save_root)
+utils.try_make_dir(log_root)
 
 
+
+######################
+#     Init model
+######################
 model = Model(opt)
 
 # if len(opt.gpu_ids):
 #     model = torch.nn.DataParallel(model, device_ids=opt.gpu_ids)
 model = model.cuda(device=opt.device)
 
-# optimizer_G, optimizer_D = model.module.optimizer_G, model.module.optimizer_D
-# optimizer_G = model.g_optimizer
-
 start_epoch = opt.which_epoch if opt.which_epoch else 0
 model.train()
 
 # Start training
 print('Start training...')
-start_step = start_epoch * len(dataloader)
+start_step = start_epoch * len(train_dataloader)
 global_step = start_step
-total_steps = opt.epochs * len(dataloader)
+total_steps = opt.epochs * len(train_dataloader)
 start = time.time()
 
+#####################
+#   cosine 学习率
+#####################
+scheduler = LR_Scheduler('cos', opt.lr, opt.epochs, len(train_dataloader), warmup_epochs=0, logger=logger)
+######################
+#    Summary_writer
+######################
 writer = create_summary_writer(log_root)
-#scheduler = LR_Scheduler('cos', opt.lr, opt.epochs, len(dataloader), warmup_epochs=10)
 
+######################
+#     Train loop
+######################
 for epoch in range(start_epoch, opt.epochs):
-    for iteration, data in enumerate(dataloader):
+    for iteration, data in enumerate(train_dataloader):
+        ####################
+        #     Update lr
+        ####################
+        scheduler(model.g_optimizer, iteration, epoch + 1)
+
         global_step += 1
         rate = (global_step - start_step) / (time.time() - start)
         remaining = (total_steps - global_step) / rate
 
-        img, label, _ = data
+        img, label = data  # ['label'], data['image']  #
         img_var = Variable(img, requires_grad=False).cuda(device=opt.device)
         label_var = Variable(label, requires_grad=False).cuda(device=opt.device)
 
         # Cleaning noisy images
-        cleaned, A, t = model.cleaner(img_var)
+        cleaned = model.cleaner(img_var)
+
+        ##############################
+        #       Update parameters
+        ##############################
         model.update_G(cleaned, label_var)
 
-        Jt = torch.clamp(cleaned * t, min=.01, max=.99)
-        airlight = torch.clamp(A * (1-t), min=.01, max=.99)
-
+        ###############################
+        #     Tensorboard Summary
+        ###############################
         if epoch % opt.log_freq == opt.log_freq - 1 and iteration < 5:
-            write_image(writer, 'train/%d' % iteration, '0_input', img.data[0], epoch)
-            write_image(writer, 'train/%d' % iteration, '1_A', A.data[0], epoch)
-            write_image(writer, 'train/%d' % iteration, '2_t', t.data[0], epoch)
-            write_image(writer, 'train/%d' % iteration, '3_Jt', Jt.data[0], epoch)
-            write_image(writer, 'train/%d' % iteration, '4_airlit', airlight.data[0], epoch)
+            img = (img.detach().cpu() + 1) / 2
+            # cleaned = cleaned.mean(dim=1, keepdim=True)
+            cleaned = (cleaned.detach().cpu() + 1) / 2
+            label_var = (label_var.detach().cpu() + 1) / 2
+
+            write_image(writer, 'train/%d' % iteration, 'input', img.data[0], epoch)
             cleaned[cleaned > 1] = 1
             cleaned[cleaned < 0] = 0
-            write_image(writer, 'train/%d' % iteration, '5_output', cleaned.data[0], epoch)
-            write_image(writer, 'train/%d' % iteration, '6_target', label_var.data[0], epoch)
-
-        # update
-
+            write_image(writer, 'train/%d' % iteration, 'output', cleaned.data[0], epoch)
+            write_image(writer, 'train/%d' % iteration, 'target', label_var.data[0], epoch)
 
         pre_msg = 'Epoch:%d' % epoch
 
         msg = '(loss) %s ETA: %s' % (str(model.avg_meters), utils.format_time(remaining))
-        utils.progress_bar(iteration, len(dataloader), pre_msg, msg)
+        utils.progress_bar(iteration, len(train_dataloader), pre_msg, msg)
         # print(pre_msg, msg)
-        #scheduler(model.g_optimizer, iteration, epoch)
-        # print('Epoch(' + str(epoch + 1) + '), iteration(' + str(iteration + 1) + '): ' +'%.4f, %.4f' % (-ssim_loss.item(),
-        #                                                                                                l1_loss.item()))
 
-    # write_loss(writer, 'train', 'F1', 0.78, epoch)
     write_meters_loss(writer, 'train', model.avg_meters, epoch)
     logger.info('Train epoch %d, (loss) ' % epoch + str(model.avg_meters))
 
-    if epoch % opt.save_freq == opt.save_freq - 1 or epoch == opt.epochs-1:  # 每隔10次save checkpoint
+    if epoch % opt.save_freq == opt.save_freq - 1 or epoch == opt.epochs - 1:  # 每隔10次save checkpoint
         model.save(epoch)
 
+    ####################
+    #     Validation
+    ####################
     if epoch % opt.eval_freq == (opt.eval_freq - 1):
+
         model.eval()
-        evaluate(model.cleaner, val_dataloader, epoch + 1, writer)
-        # evaluate(model.cleaner, real_dataloader, epoch + 1, writer, 'SINGLE')
+        if has_val:
+            # evaluate(model.cleaner, val_dataloader, epoch + 1, writer)
+            pass
+        if has_test:
+            evaluate(model.cleaner, test_dataloader, epoch + 1, writer, test_mode=True)
+            utils.color_print("Test results have been saved.", 3)
         model.train()
-
-
-    # if epoch in [700, 1400]:
-    #     for param_group in model.g_optimizer.param_groups:
-    #         param_group['lr'] *= 0.1
 
