@@ -40,7 +40,7 @@ def p(v):
         print(v)
 
 
-def color_print(text='', color=0):
+def color_print(text='', color=0, end='\n'):
     """Print colored text.
 
     Args:
@@ -54,6 +54,7 @@ def color_print(text='', color=0):
             * 5       cyan (like light red)
             * 6       magenta (like light blue)
             * 7       white
+        end(str): end string after colored text.
 
     Example
         >>> color_print('yellow', 3)
@@ -61,7 +62,7 @@ def color_print(text='', color=0):
     """
     print('\033[1;3%dm' % color, end='')
     print(text, end='')
-    print('\033[0m')
+    print('\033[0m', end=end)
 
 
 def print_args(args):

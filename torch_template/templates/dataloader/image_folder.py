@@ -14,8 +14,8 @@ from PIL import Image
 import os
 import os.path
 
-from .transforms import __crop, __flip
-from ..utils.torch_utils import create_summary_writer, write_image
+from dataloader.transforms import __crop, __flip
+from utils.torch_utils import create_summary_writer, write_image
 
 IMG_EXTENSIONS = [
     '.jpg', '.JPG', '.jpeg', '.JPEG',

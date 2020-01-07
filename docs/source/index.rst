@@ -10,6 +10,7 @@ Welcome to torch_template's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   dataloader
    utils
 
 

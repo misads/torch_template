@@ -30,7 +30,14 @@ copyright = '2020, Haoyu Xu'
 author = 'Haoyu Xu'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+import re
+with open(os.path.join(rootdir, "torch_template/version.py")) as fid:
+    try:
+        __version__, = re.findall( '__version__ = "(.*)"', fid.read() )
+    except:
+        raise ValueError("could not find version number")
+
+release = __version__
 
 master_doc = "index"
 

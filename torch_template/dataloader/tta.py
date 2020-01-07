@@ -1,9 +1,9 @@
 # encoding=utf-8
 """
-    TTA plugin into test data_loader loop,
-        containing overlap and data_aug (8×)
+    TTA plugin used in test data_loader loop, containing overlap and data_aug (8×)
 
-    Author:   KuangShi Zhang(15010225399@126.com)
+    Author: zks@tju.edu.cn
+
     Refactor: xuhaoyu@tju.edu.cn
 """
 
@@ -12,28 +12,33 @@ import pdb
 import torch
 from torch.autograd import Variable
 from torchvision.transforms import functional as F, transforms
-from options import opt
 
 
 class OverlapTTA(object):
-    def __init__(self, img, nw, nh, patch_w=256, patch_h=256, norm_patch=False, flip_aug=False):
-        """
-            重叠取块TTA
-            Usage Example:
-                >>> for i, data in enumerate(dataset):
-                >>>     tta = OverlapTTA(img, 10, 10, 256, 256, norm_patch=False, flip_aug=False)
-                >>>     for j, x in enumerate(tta):  # 获取每个patch输入
-                >>>         generated = model(x)
-                >>>         torch.cuda.empty_cache()
-                >>>         tta.collect(generated[0], j)  # 收集inference结果
-                >>>     output = tta.combine()
-            :param nw: 横着多少小块
-            :param nh:
-            :param patch_w: 每小块尺寸
-            :param patch_h:
-            :param norm_patch: 是否对每个patch norm
-            :param flip_aug: 是否使用 aug×8
-        """
+    """overlap TTA
+
+    Args:
+        nw(int): num of patches (in width direction)
+        nh(int):  num of patches (in height direction)
+        patch_w(int): width of a patch.
+        patch_h(int): height of a patch.
+        norm_patch(bool): if norm each patch or not.
+        flip_aug(bool): not used yet.
+        device(str): device string, default 'cuda:0'.
+
+    Usage Example
+        >>> from torch_template import OverlapTTA
+        >>> for i, data in enumerate(dataset):
+        >>>     tta = OverlapTTA(img, 10, 10, 256, 256, norm_patch=False, flip_aug=False, device=opt.device)
+        >>>     for j, x in enumerate(tta):  # 获取每个patch输入
+        >>>         generated = model(x)
+        >>>         torch.cuda.empty_cache()
+        >>>         tta.collect(generated[0], j)  # 收集inference结果
+        >>>     output = tta.combine()
+
+    """
+    def __init__(self, img, nw, nh, patch_w=256, patch_h=256, norm_patch=False, flip_aug=False, device='cuda:0'):
+
         self.img = img
         self.nw = nw
         self.nh = nh
@@ -44,6 +49,7 @@ class OverlapTTA(object):
         self.flip_aug = flip_aug
         self.transforms = transforms.Compose([transforms.Normalize((0.5, 0.5, 0.5),
                                                                    (0.5, 0.5, 0.5))]) if norm_patch else None
+        self.device = device
 
         #####################################
         #                 步长
@@ -105,7 +111,7 @@ class OverlapTTA(object):
             if self.norm_patch:
                 img = self.transforms(img[0]).unsqueeze(dim=0)
 
-            img_var = Variable(img, requires_grad=False).cuda(device=opt.device)
+            img_var = Variable(img, requires_grad=False).cuda(device=self.device)
             return img_var
 
     def __len__(self):

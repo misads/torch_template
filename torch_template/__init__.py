@@ -24,6 +24,7 @@
 
 from .utils import misc_utils
 from .utils import torch_utils
+from .dataloader.tta import OverlapTTA
 
 from .model_zoo import *
 

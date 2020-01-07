@@ -13,18 +13,24 @@ A python package for commonly used pytorch models, data loaders and utils.
 
 ### Installation
 
+**For pip**  
+
+```bash
+pip install torch-template
+```
+
+**For source**
+
 Clone the repo, cd into it and run `pip install .` command.
 
-``` bash
+```bash
 git clone https://github.com/misads/torch_template.git
 cd torch_template
-```
-**For pip**  
-```bash
-pip install . 
+pip install .
 ```
 
 **For conda**
+
 ```bash
 source ~/anaconda3/bin/activate
 conda activate <env>
@@ -37,10 +43,14 @@ A configure file `torch_template.egg-info` will be generated in the repo directo
 ### Usage
 
 ```python
-import torch_template
+import torch_template as tt
 from torch_template import misc_utils as utils
 from torch_template import torch_utils
 ```
+
+### Documentation
+
+The documentation webpage can be found here <https://torch-template.readthedocs.io/en/latest/>.
 
 ### File structure
 

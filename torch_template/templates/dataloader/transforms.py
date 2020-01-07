@@ -8,7 +8,16 @@ try:
     import accimage
 except ImportError:
     accimage = None
-
+import numpy as np
+import scipy.stats as st
+import cv2
+import numbers
+import types
+import collections
+import matplotlib.pyplot as plt
+import torchvision.transforms as transforms
+import torchvision.transforms.functional as F
+from scipy.signal import convolve2d
 
 def __make_power_2(img, base, method=Image.BICUBIC):
     ow, oh = img.size
