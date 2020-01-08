@@ -3,7 +3,7 @@ import os
 
 import torch
 
-import utils.misc_utils as utils
+from torch_template import misc_utils as utils
 
 """
     Arg parse
@@ -15,7 +15,7 @@ def parse_args():
     # experiment specifics
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--tag', type=str, default='default',
+    parser.add_argument('--tag', type=str, default='cache',
                         help='folder name to save the outputs')
     parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints', help='models are saved here')
@@ -33,15 +33,14 @@ def parse_args():
 
     # for datasets
     parser.add_argument('--data_root', type=str, default='./datasets/')
-    parser.add_argument('--dataset', type=str, default='')
-    parser.add_argument('--valset', type=str, default=None)
+    parser.add_argument('--dataset', type=str, default='train')
+    parser.add_argument('--val_set', type=str, default=None)
+    parser.add_argument('--test_set', type=str, default=None)
 
 
     # loss weight
     parser.add_argument('--weight_bce', type=float, default=20)
     parser.add_argument('--weight_dice', type=float, default=0.5)
-    parser.add_argument('--weight_focal', type=float, default=0.)
-
 
     # training options
     parser.add_argument('--debug', action='store_true', help='debug mode')

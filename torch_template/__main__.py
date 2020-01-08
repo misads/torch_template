@@ -35,7 +35,7 @@ def init_repo(path):
 
     print("\nCreating Project '%s' into '%s'\n" % (name, path))
 
-    subfolders = {"dataloader": [],
+    subfolders = {"dataloader": ['dataset.py'],
                   "datasets": [],
                   "network": ['Model.py'],
                   'options': ['__init__.py', 'options.py']}
@@ -70,7 +70,7 @@ def init_repo(path):
     ############################
     #   Files in repo root dir
     ############################
-    files = ['train.py', 'eval.py', 'test.py', 'README.md']
+    files = ['train.py', 'eval.py', 'test.py', 'clear.py', 'README.md']
 
     for idx, s in enumerate(files):
         if idx == len(files) - 1:
