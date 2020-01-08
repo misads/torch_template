@@ -32,7 +32,7 @@ setup(
         "torchvision",
         "tensorboardX",
     ],
-    packages=setuptools.find_packages(exclude=["torch_template.templates"]),  # ['torch_template', 'torch_template/utils']
+    packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",

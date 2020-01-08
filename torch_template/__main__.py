@@ -70,66 +70,29 @@ def init_repo(path):
     ############################
     #   Files in repo root dir
     ############################
-    files = ['train.py', 'eval.py', 'test.py', 'clear.py', 'README.md']
+    files = ['train.py', 'eval.py', 'test.py', 'clear.py']
 
     for idx, s in enumerate(files):
-        if idx == len(files) - 1:
-            print(prefix + " └── ", end='')
-            utils.color_print(s, 2)
-        else:
-            print(prefix + " ├── ", end='')
-            utils.color_print(s, 2)
+        print(prefix + " ├── ", end='')
+        utils.color_print(s, 2)
         fname = resource_filename(__name__, os.path.join('templates', s))
         dst = os.path.join(path, s)
         shutil.copy(fname, dst)
         promts.append("Copy '%s' to '%s'" % (os.path.join('templates', s), dst))
         replace(dst, name)
 
+    print(prefix + " └── ", end='')
+    utils.color_print('README.md', 2)
+    fname = resource_filename(__name__, os.path.join('templates', 'README.py'))
+    dst = os.path.join(path, 'README.md')
+    shutil.copy(fname, dst)
+    promts.append("Copy '%s' to '%s'" % (os.path.join('templates', 'README.md'), dst))
+    replace(dst, name)
+
     print()
     for i in promts:
         print(i)
     print('Finished.')
-
-    exit(1)
-    env = Environment(
-        loader=PackageLoader('torch_template', 'templates'),
-    )
-
-    print("Initializing repo files")
-    for f in ["README.md"]:
-        # resource_filename(__name__, os.path.join('templates', f))
-        template = env.get_template(f)
-        dst = os.path.join(path, f)
-        with open(dst, 'w') as fid:
-            fid.write(template.render(name=name))
-
-    for f in ["models.py", "datasets.py", "interfaces.py", "callbacks.py",
-              "version.py", "__init__.py"]:
-        # resource_filename(__name__, os.path.join('templates', f))
-        template = env.get_template(f)
-        dst = os.path.join(path, name, f)
-        with open(dst, 'w') as fid:
-            fid.write(template.render(name=name))
-
-    for f in ["train.py", "eval.py"]:
-        # resource_filename(__name__, os.path.join('templates', f))
-        template = env.get_template(f)
-        dst = os.path.join(path, "scripts", f)
-        with open(dst, 'w') as fid:
-            fid.write(template.render(name=name))
-
-    for f in ["test_basic.py"]:
-        # resource_filename(__name__, os.path.join('templates', f))
-        template = env.get_template(f)
-        dst = os.path.join(path, "tests", f)
-        with open(dst, 'w') as fid:
-            fid.write(template.render(name=name))
-
-    fname = resource_filename('torch_template', os.path.join('templates', "default.yml"))
-    dst = os.path.join(path, "config", "default.yml")
-    shutil.copy(fname, dst)
-
-    print("Done! Check the readme at %s" % os.path.join(path, "README.md"))
 
 
 def new_project():
