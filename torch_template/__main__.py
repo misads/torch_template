@@ -3,7 +3,7 @@ import os
 import shutil
 
 from pkg_resources import resource_filename
-from .utils import misc_utils as utils
+import misc_utils as utils
 
 
 def replace(dst, name):

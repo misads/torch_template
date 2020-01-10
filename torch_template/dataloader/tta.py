@@ -11,7 +11,7 @@ import pdb
 
 import torch
 from torch.autograd import Variable
-from torchvision.transforms import functional as F, transforms
+from torchvision.transforms import transforms
 
 
 class OverlapTTA(object):

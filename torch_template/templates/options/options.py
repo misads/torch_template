@@ -3,7 +3,7 @@ import os
 
 import torch
 
-from torch_template import misc_utils as utils
+import misc_utils as utils
 
 """
     Arg parse

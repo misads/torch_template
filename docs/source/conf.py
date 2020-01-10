@@ -44,7 +44,7 @@ master_doc = "index"
 # -- General configuration ---------------------------------------------------
 
 
-autodoc_mock_imports = ["torch", "torchvision", "tensorboardX", "coloredlogs", "numpy", "visdom"]
+autodoc_mock_imports = ["torch", "torchvision", "tensorboardX", "coloredlogs", "numpy", "visdom", 'misc_utils']
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom

@@ -11,7 +11,7 @@ from dataloader.image_folder import get_data_loader_folder
 from dataloader.tta import OverlapTTA
 from network.Model import Model
 from options import opt
-from utils.misc_utils import get_file_name
+from misc_utils import get_file_name
 
 sys.path.insert(1, '../')
 import torch
@@ -19,7 +19,7 @@ import torchvision
 import numpy as np
 from PIL import Image
 
-import utils.misc_utils as utils
+import misc_utils as utils
 
 # ######################
 # #       Dataset

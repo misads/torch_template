@@ -2,7 +2,7 @@
 """Misc system & image process utils
 
 Usage:
-    >>> from torch_template import misc_utils as utils
+    >>> import misc_utils as utils
     >>> utils.func_name()  # to call functions in this file
 """
 import glob

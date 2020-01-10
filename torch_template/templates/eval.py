@@ -20,7 +20,7 @@ from PIL import Image
 
 from skimage.measure import compare_psnr as psnr
 from skimage.measure import compare_ssim as ski_ssim
-from torch_template import misc_utils as utils
+import misc_utils as utils
 
 
 def evaluate(cleaner, dataloader, epochs, writer, test_mode=False, norm=False):

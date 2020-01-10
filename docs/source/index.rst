@@ -11,7 +11,11 @@ Welcome to torch_template's documentation!
    :caption: Contents:
 
    dataloader
+   model_zoo
+   model
+   options
    utils
+   
 
 
 

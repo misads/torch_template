@@ -3,7 +3,7 @@ import os
 import random
 import torch
 import os
-from torch_template import misc_utils as utils
+import misc_utils as utils
 
 
 def parse_args():

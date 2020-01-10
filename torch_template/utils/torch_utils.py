@@ -18,7 +18,7 @@ from tensorboardX import SummaryWriter
 ##############################
 #    Functional utils
 ##############################
-from .misc_utils import format_num
+from misc_utils import format_num
 
 
 def clamp(x, min=0.01, max=0.99):

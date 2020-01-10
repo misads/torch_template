@@ -38,7 +38,6 @@
         ├── dataloader/             :Define Dataloaders
         ├── model_zoo               :Commonly used models
         └── utils
-              ├── misc_utils.py     :System utils
               └── torch_utils.py    :PyTorch utils
 
     Usage:
@@ -75,7 +74,7 @@ from network.Model import Model
 from eval import evaluate
 from options import opt, logger
 from torch_template.utils.torch_utils import create_summary_writer, write_image, write_meters_loss, LR_Scheduler
-from torch_template import misc_utils as utils
+import misc_utils as utils
 import numpy as np
 
 ######################

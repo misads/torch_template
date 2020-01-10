@@ -2,7 +2,7 @@ import os
 import torch
 import sys
 
-from ..utils.misc_utils import color_print
+from misc_utils import color_print
 
 
 class BaseModel(torch.nn.Module):

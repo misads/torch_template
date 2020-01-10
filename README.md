@@ -39,14 +39,23 @@ python setup.py install
 
 A configure file `torch_template.egg-info` will be generated in the repo directory. Copy `torch_template` and `torch_template.egg-info` to your `site-packages` folder.
 
-
 ### Usage
+
+Test if the package is successfully installed:
 
 ```python
 import torch_template as tt
-from torch_template import misc_utils as utils
 from torch_template import torch_utils
 ```
+
+Run:
+
+```bash
+#!-bash
+tt-new
+```
+
+Enter your repo name, then a python project template will be created.
 
 ### Documentation
 
@@ -65,8 +74,7 @@ File structure
     ├── dataloader/             :Define Dataloaders
     ├── model_zoo               :Commonly used models
     └── utils
-          ├── misc_utils.py     :System utils
           └── torch_utils.py    :PyTorch utils
-
+          
 ```
 
