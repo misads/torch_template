@@ -31,6 +31,7 @@ setup(
         "numpy",
         "torchvision",
         "tensorboardX",
+        "utils-misc>=0.0.3",
     ],
     packages=setuptools.find_packages(),
     classifiers=[
