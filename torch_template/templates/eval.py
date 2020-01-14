@@ -94,3 +94,52 @@ def evaluate(cleaner, dataloader, epochs, writer, test_mode=False, norm=False):
         logger.info('Eva epoch %d ,' % epochs + 'ssim: ' + str(ave_ssim / float(ct_num)) + '.')
 
 
+    # Set transformer, convertor, and data_loader
+    from torch_template.dataloader.image_folder import get_data_loader_folder
+    from options import opt
+    from network import models
+    import misc_utils as utils
+    from torch_template.utils.torch_utils import create_summary_writer
+
+    log_root = os.path.join(opt.result_dir, opt.tag)
+    utils.try_make_dir(log_root)
+
+    HSTS_PATH = './datasets/RESIDE/HSTS/synthetic_png'
+    hsts_dataset = HSTSDataset(HSTS_PATH)
+    hsts_dataloader = DataLoader(hsts_dataset, batch_size=1, shuffle=False, num_workers=1)
+
+    realroot = "./datasets/" + data_name + "/REAL/"
+    real_dataloader = get_data_loader_folder(realroot, 1, train=False, num_workers=1, crop=False)
+
+    Model = models[opt.model]
+    model = Model(opt)
+    model = model.cuda(device=opt.device)
+
+    writer = create_summary_writer(log_root)
+
+    evaluate(model.cleaner, hsts_dataloader, opt.which_epoch + 1, writer)
+    evaluate(model.cleaner, real_dataloader, opt.which_epoch + 1, writer, 'SINGLE')
+
+
+if __name__ == '__main__':
+    # Set transformer, convertor, and data_loader
+    from torch_template.dataloader.image_folder import get_data_loader_folder
+    from options import opt
+    from network import get_model
+    import misc_utils as utils
+    from torch_template.utils.torch_utils import create_summary_writer
+
+    log_root = os.path.join(opt.result_dir, opt.tag)
+    utils.try_make_dir(log_root)
+
+    realroot = "./datasets/" + data_name + "/REAL/"
+    real_dataloader = get_data_loader_folder(realroot, 1, train=False, num_workers=1, crop=False)
+
+    Model = get_model(opt.model)
+    model = Model(opt)
+    model = model.cuda(device=opt.device)
+
+    writer = create_summary_writer(log_root)
+
+    evaluate(model.cleaner, real_dataloader, opt.which_epoch + 1, writer)
+

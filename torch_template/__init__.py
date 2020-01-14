@@ -1,7 +1,7 @@
 """
     PyTorch Template
 
-    Version: 0.0.1
+    Version: torch_template.__version__
 
     File Structure:
         .

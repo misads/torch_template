@@ -40,12 +40,27 @@
         └── utils
               └── torch_utils.py    :PyTorch utils
 
+
+    Start your project:
+
+        1. Download your datasets and put them in 'datasets' directory.
+
+        2. Modify 'train.py' to customize your datasets and dataloaders.
+
+        3. Define your network structure in a python file in 'network' folder.
+
+        4. Modify 'network/Model.py' to define network selection and your losses.
+
     Usage:
 
     #### Train
 
         python train.py --tag together_1 --epochs 4000 --weight_bce 20. --weight_dice .5 --weight_focal 0.
             --dataset simple/cleaned --valset simple/big_cheat --gpu_ids 1
+
+    #### Evaluation
+
+        python eval.py --tag Cascaded --model cascaded --load checkpoints/Cascaded --which-epoch 669
 
     #### Resume or Fine Tune
 
@@ -67,10 +82,12 @@ import torch
 from torch.autograd import Variable
 
 from dataloader.dataset import ImageDataset, ImageTestDataset
+from collections.abc import Iterable
 
 from torch_template.dataloader import get_paired_data_loader_folder, get_data_loader_folder
 from torch.utils.data import DataLoader
-from network.Model import Model
+# from network.Model import Model
+from network import get_model
 from eval import evaluate
 from options import opt, logger
 from torch_template.utils.torch_utils import create_summary_writer, write_image, write_meters_loss, LR_Scheduler
@@ -182,6 +199,7 @@ utils.try_make_dir(log_root)
 ######################
 #     Init model
 ######################
+Model = get_model(opt.model)
 model = Model(opt)
 
 # if len(opt.gpu_ids):
@@ -233,6 +251,8 @@ for epoch in range(start_epoch, opt.epochs):
         #       Update parameters
         ##############################
         cleaned = model.update_G(img_var, label_var)
+        if isinstance(cleaned, Iterable):
+            cleaned = cleaned[0]
 
         ###############################
         #     Tensorboard Summary

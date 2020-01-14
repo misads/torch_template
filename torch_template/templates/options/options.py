@@ -37,6 +37,8 @@ def parse_args():
     parser.add_argument('--val_set', type=str, default=None)
     parser.add_argument('--test_set', type=str, default=None)
 
+    # init weights
+    parser.add_argument('--init', type=str, default=None, help='{normal, xavier, kaiming, orthogonal}')
 
     # loss weight
     parser.add_argument('--weight_bce', type=float, default=20)
