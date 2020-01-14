@@ -13,7 +13,7 @@ import os
 import torch
 import torch.nn as nn
 from tensorboardX import SummaryWriter
-
+import numpy as np
 
 ##############################
 #    Functional utils
@@ -52,23 +52,31 @@ def repeat(x: torch.Tensor, *sizes):
     return x.repeat(*sizes)
 
 
-def tensor2im(x: torch.Tensor, norm=False, dtype='float32'):
+def tensor2im(x: torch.Tensor, norm=False, to_save=False):
     """Convert tensor to image.
 
     Args:
         x(torch.Tensor): input tensor, [n, c, h, w] float32 type.
         norm(bool): if the tensor should be denormed first
-        dtype(str): not used yet.
+        to_save(bool): if False, a float32 image of [h, w, c], if True, a uint8 image of [h, w, c].
 
     Returns:
-        an image in shape of [h, w, c].
+        an image in shape of [h, w, c] if to_save else [c, h, w].
 
     """
     if norm:
         x = (x + 1) / 2
     x[x > 1] = 1
     x[x < 0] = 0
-    return x.detach().cpu().data[0]
+
+    x = x.detach().cpu().data[0]
+
+    if to_save:
+        x *= 255
+        x = x.astype(np.uint8)
+        x = x.transpose((1, 2, 0))
+
+    return x
 
 
 ##############################
